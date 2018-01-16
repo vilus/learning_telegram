@@ -3,6 +3,7 @@ import logging
 import os
 import telegram
 from flask import Flask, request
+from handlers import get_dispatcher
 
 
 TOKEN = os.environ.get('token')
@@ -14,12 +15,13 @@ app.debug = True
 bot = telegram.Bot(token=TOKEN)
 
 
-@app.route(HOOK, methods=['POST'])
+@app.route(HOOK, methods=['POST'])  # TODO: replace HOOK to HOOK + TOKEN
 def webhook_handler():
     data = request.get_json(force=True)
     logging.debug('incoming data: {0}'.format(data))
     update = telegram.Update.de_json(data, bot)
-    bot.sendMessage(chat_id=update.message.chat.id, text=update.message.text)
+    dp = get_dispatcher(bot)
+    dp.process_update(update)
     return ''
 
 
