@@ -1,3 +1,5 @@
 .idea
 .venvs
 *.pyc
+app.yaml
+lib/
