@@ -41,7 +41,7 @@ class HAService:
 
         logging.debug('start handling request: {0}'.format(req_id))
 
-        self.parser.check_params(back_data, req_id)
+        self.parser.check_params(back_data)
         location = self.parser.get_weather_location(back_data)
         weather = self.get_weather(location, req_id)
         self.sender.reply(back_data, weather)

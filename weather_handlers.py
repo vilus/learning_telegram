@@ -11,7 +11,7 @@ def weather(bot, update):
     :param update:
     :return:
     """
-    update.message.text = "/say >> weather: {0}"
+    update.message.text = "/say Moscow weather: {0}"
     back_data = update.to_dict()
     # tasks.weather.delay(back_data)
     tell_weather(back_data)

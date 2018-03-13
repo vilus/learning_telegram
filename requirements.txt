@@ -6,6 +6,7 @@ celery[redis]
 requests
 pytest
 pytest-xdist
+jsonschema
 mock
 beaker
 SQLAlchemy
