@@ -1,0 +1,7 @@
+.idea
+.venvs
+*.pyc
+app.yaml
+lib/
+.pytest_cache
+test.db

@@ -1,0 +1,11 @@
+python-telegram-bot==9.0.0
+Flask==0.12.2
+simpleeval==0.9.5
+celery
+celery[redis]
+requests
+pytest
+pytest-xdist
+mock
+beaker
+SQLAlchemy
