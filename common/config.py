@@ -19,7 +19,7 @@ PREFIX = environ.get('CONFIG_PREFIX', 'TLM_')
 
 
 def from_env():
-    conf = dict((k.lstrip(PREFIX), v) for k, v in environ.items() if k.startswith(PREFIX))
+    conf = dict((k.lstrip(PREFIX).lower(), v) for k, v in environ.items() if k.startswith(PREFIX))
     return conf
 
 

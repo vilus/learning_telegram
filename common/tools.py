@@ -66,6 +66,7 @@ def _increase_counter(name, ttl, _sessionmaker):
             session.rollback()
 
         counter = Counter(name, ttl)
+        # NOTE: sqlite does not support SELECT ... FOR UPDATE
         session.query(Lock).filter_by(name=name).with_for_update().one()
         session.add(counter)  # session.flush() ??
         # TODO: need to get rid of converting "datetime" -> "unixepoch" -> "datetime"
@@ -91,6 +92,13 @@ def _decrease_counter(counter_id, _sessionmaker):
 
 
 def get_tools(conf):
+    """
+    TODO: implement for GCP orm
+    params in conf:
+        - tools_orm_type: ['sqlalchemy', 'gcp']
+        - db_url: for 'sqlalchemy'
+        - xxx: for 'gcp' - not implemented yet
+    """
     engine = create_engine(conf['db_url'], echo=conf.get('db_echo', False))
     session_maker = sessionmaker(bind=engine)
 

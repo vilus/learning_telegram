@@ -1,0 +1,23 @@
+{
+  "message": {
+    "date": 1516121409,
+    "text": "hi",
+    "from": {
+      "username": "<Your Full Name>",
+      "first_name": "<First Name>",
+      "last_name": "<Last Name>",
+      "is_bot": "False",
+      "language_code": "ru-RU",
+      "id": <your chat id>
+    },
+    "message_id": 59,
+    "chat": {
+      "username": "<Your Full Name>",
+      "first_name": "<First Name>",
+      "last_name": "<Last Name>",
+      "type": "private",
+      "id": <your chat id>
+    }
+  },
+  "update_id": <some int>
+}

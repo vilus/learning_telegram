@@ -4,9 +4,9 @@ import os
 from ..config import get_conf, PREFIX
 
 
-first_param = 'FIRST_PARAM'
+first_param = 'first_param'
 first_value = 'first_value'
-second_param = 'SECOND_PARAM'
+second_param = 'second_param'
 second_value = 'second_value'
 
 

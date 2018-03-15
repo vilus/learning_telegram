@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from weather_mediator import tell_weather
+from .backgrounds import get_background
+from .common import config
 
 
 def weather(bot, update):
@@ -13,5 +14,7 @@ def weather(bot, update):
     """
     update.message.text = "/say Moscow weather: {0}"
     back_data = update.to_dict()
-    # tasks.weather.delay(back_data)
-    tell_weather(back_data)
+    conf = config.get_conf()
+    bg_type = conf.get('bg_type', 'celery')
+    bg = get_background(bg_type)
+    bg.run('say_weather', conf, back_data)

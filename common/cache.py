@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import beaker.cache as cache
-# from beaker.util import parse_cache_config_options
 
 
 def get_cache_in_memory(**_):
@@ -12,6 +11,9 @@ def get_cache_in_memory(**_):
 
 def get_cache_in_db(**params):
     """
+    params:
+        - cache_name: optional
+        - db_url
     ext:database
     """
     return cache.Cache(params.get('cache_name', 'cache_in_db'), url=params['db_url'], type='ext:database')

@@ -2,6 +2,8 @@
 import logging
 
 TASK_TIMEOUT = 60
+WEATHER_CACHE_TIMEOUT = 4*60*60
+WEATHER_API_RATE = 1/(60*60)
 
 
 class HAService:
@@ -15,6 +17,8 @@ class HAService:
         self.ext_api = ext_api
         self.task_timeout = self.conf.get('task_running_timeout', TASK_TIMEOUT)  # TODO: rename
         self.check_interval = self.conf.get('check_task_interval', 1)
+        self.cache_timeout = self.conf.get('weather_cache_timeout', WEATHER_CACHE_TIMEOUT)
+        self.api_rate_limit = self.conf.get('weather_api_rate', WEATHER_API_RATE)
 
     def handle(self, back_data, req_id):
         # validation params
@@ -46,11 +50,14 @@ class HAService:
         weather = self.get_weather(location, req_id)
         self.sender.reply(back_data, weather)
 
+    # TODO: rewrite usage of fast and slow cache via class method decorator
     def get_weather(self, location, req_id):
         """
         :return:
         """
+        # TODO: rewrite 'in' to 'get' and check on None !!!
         if location in self.fast_cache:
+            # race condition !
             return self.fast_cache.get(location)
 
         res = 'The weather temporary unavailable, pls try later'
@@ -64,18 +71,18 @@ class HAService:
 
         if location in self.slow_cache:
             res = self.slow_cache.get(location)
-            self.fast_cache[location] = res
+            self.fast_cache.set_value(location, res, expiretime=self.cache_timeout)
             self.tools.decrease_counter(counter_id)
             return res
 
-        if self.tools.is_allowed_service(self.ext_api):
+        if self.tools.is_allowed_service(self.ext_api, self.api_rate_limit):
             try:
                 res = self.ext_api.get_weather(location)
             except Exception as e:
                 logging.error('req_id: {0}, got error {1} when getting the weather from api'.format(req_id, e))
             else:
-                self.fast_cache[location] = res
-                self.slow_cache[location] = res
+                self.fast_cache.set_value(location, res, expiretime=self.cache_timeout)
+                self.slow_cache.set_value(location, res, expiretime=self.cache_timeout)
 
         self.tools.decrease_counter(counter_id)
         return res
@@ -86,6 +93,17 @@ class SimpleService:
         pass
 
 
-class DummyService:
+class MockService:
     def handle(self):
         pass
+
+'''
+def get_service(tag=''):
+    """return just cls! not created object"""
+    service_map = {
+        'ha': HAService,
+        'simple': SimpleService,
+        'mock': MockService,
+    }
+    return service_map[tag]
+'''

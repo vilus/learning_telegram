@@ -9,7 +9,7 @@ app = Celery(
     'background',
     broker='redis://',
     backend='redis://',
-    include=['background.tasks']
+    include=['celery.tasks']
 )
 
 '''
