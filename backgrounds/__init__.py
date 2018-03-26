@@ -15,9 +15,11 @@ def _get_gcp():
     raise NotImplementedError
 
 
-def get_background(tag='celery'):
-    bk_map = {
+def get_background(conf):
+    # background must have method `run(cmd, conf, params)`
+    tag = conf.get('bg_type', 'celery')
+    bg_map = {
         'celery': _get_celery,
         'thread': _get_thread,
     }
-    return bk_map[tag]()
+    return bg_map[tag]()

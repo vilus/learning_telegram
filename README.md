@@ -1,4 +1,9 @@
 **draft**
+```sh
+py.test -n 4 -v .
+docker-compose -f docker-compose.yml -f docker-compose.yml up -d
+```
+
 
 ```sh
 git clone ...
@@ -8,7 +13,8 @@ pip install -r requirements.txt
 export token="your token"
 export FLASK_APP=main.py
 export FLASK_DEBUG=1
-flask run --host=0.0.0.0
+# export $(cut -d= -f1 .mem_sqlite_ha_envs)
+flask run --host=0.0.0.0 --port 8080 
 ```
 
 > via google application engine

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import pytest
-from ..parser import get_weather_location, check_params
+from ..demultiplexer import get_weather_location, check_params
 
 
 def test_get_weather_location():

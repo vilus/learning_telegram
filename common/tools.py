@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
+import logging
 import time
 from contextlib import contextmanager
 from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine, exc, and_, orm
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.sql import func
+from sqlalchemy.sql import func, extract
+from sqlalchemy.engine.url import URL
 
 
 @contextmanager
@@ -69,14 +71,13 @@ def _increase_counter(name, ttl, _sessionmaker):
         # NOTE: sqlite does not support SELECT ... FOR UPDATE
         session.query(Lock).filter_by(name=name).with_for_update().one()
         session.add(counter)  # session.flush() ??
-        # TODO: need to get rid of converting "datetime" -> "unixepoch" -> "datetime"
         res = session.query(Counter).filter(
             and_(
-                func.datetime(func.strftime('%s', Counter.created_at) + Counter.ttl, 'unixepoch') >
-                func.datetime(func.strftime('%s', 'now'), 'unixepoch'),
+                extract('epoch', Counter.created_at) + Counter.ttl > extract('epoch', func.now()),
                 Counter.name == name
             )
         ).count()
+
         session.commit()
         c_id = counter.id
         return res, c_id
@@ -91,6 +92,30 @@ def _decrease_counter(counter_id, _sessionmaker):
             pass
 
 
+@contextmanager
+def _incr_decr(name, ttl, _sessionmaker):
+    num, c_id = _increase_counter(name, ttl, _sessionmaker)
+    try:
+        yield num
+    finally:
+        _decrease_counter(c_id, _sessionmaker)
+
+
+def make_db_url(conf, prefix=''):
+    db_url = conf.get('db_url')
+    if db_url:
+        return db_url
+
+    params = dict()
+    params['drivername'] = conf.get(prefix+'db_drivername')
+    params['username'] = conf.get(prefix+'db_user')
+    params['password'] = conf.get(prefix+'db_password')
+    params['host'] = conf.get(prefix+'db_host')
+    params['port'] = conf.get(prefix+'db_port')
+    params['database'] = conf.get(prefix+'db_name')
+    return str(URL(**params))
+
+
 def get_tools(conf):
     """
     TODO: implement for GCP orm
@@ -99,22 +124,29 @@ def get_tools(conf):
         - db_url: for 'sqlalchemy'
         - xxx: for 'gcp' - not implemented yet
     """
-    engine = create_engine(conf['db_url'], echo=conf.get('db_echo', False))
+    db_url = make_db_url(conf)
+    logging.debug('creating db engine with db_url: {0}'.format(db_url))
+    engine = create_engine(db_url, echo=conf.get('db_echo', False))
     session_maker = sessionmaker(bind=engine)
 
     if not engine.dialect.has_table(engine, Counter.__tablename__):
         Base.metadata.create_all(engine)
     # temporary solution
     tools = type('', (object,), {})()
-    setattr(tools, 'increase_counter',
-            lambda name, ttl, _sessionmaker=session_maker: _increase_counter(name, ttl, _sessionmaker))
-    setattr(tools, 'decrease_counter',
-            lambda counter_id, _sessionmaker=session_maker: _decrease_counter(counter_id, _sessionmaker))
-    setattr(tools, 'is_allowed_service',
-            lambda service_name, rate, _sessionmaker=session_maker: _is_allowed_service(service_name,
-                                                                                        rate,
-                                                                                        _sessionmaker))
-    setattr(tools, 'wait', wait)
+
+    tools.increase_counter = lambda name, ttl, _sessionmaker=session_maker: \
+        _increase_counter(name, ttl, _sessionmaker)
+
+    tools.decrease_counter = lambda counter_id, _sessionmaker=session_maker: \
+        _decrease_counter(counter_id, _sessionmaker)
+
+    tools.is_allowed_service = lambda service_name, rate, _sessionmaker=session_maker: \
+        _is_allowed_service(service_name, rate, _sessionmaker)
+
+    tools.incr_decr = lambda name, ttl, _sessionmaker=session_maker: \
+        _incr_decr(name, ttl, _sessionmaker)
+
+    tools.wait = wait
 
     return tools
 
@@ -159,7 +191,7 @@ def _is_allowed_service(service_name, rate,  _sessionmaker):
             session.rollback()
         # may be need to move query to model
         limit, duration = session.query(Limiter).add_columns(
-            func.strftime('%s', func.now()) - func.strftime('%s', Limiter.last_usage)
+            extract('epoch', func.now()) - extract('epoch', Limiter.last_usage)
         ).filter_by(name=service_name).with_for_update().first()
 
         if duration*rate >= 1:

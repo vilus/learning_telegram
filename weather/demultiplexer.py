@@ -42,3 +42,9 @@ def check_params(params):
     # expected format: "/some_cmd weather_location weather: {0}"
     if len(msg.split()) < 4:
         raise ParseError('message.text too short')
+
+
+def get_parser(_):
+    # TODO: refactor
+    import sys
+    return sys.modules[__name__]

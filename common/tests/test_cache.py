@@ -14,6 +14,7 @@ def cache(request):
 
 def test_get(cache):
     assert cache.get('test') == 42
+    assert cache.get('ololo') is None
 
 
 def test_in(cache):

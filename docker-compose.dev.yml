@@ -1,0 +1,20 @@
+version: '2'
+
+services:
+  tlm_bot_backend:
+    environment:
+      - token=insert_me
+    env_file:
+      - .ha_postgres_redis_celery_envs
+
+  db:
+    env_file:
+      - .ha_postgres_redis_celery_envs
+
+  redis:
+    env_file:
+      - .ha_postgres_redis_celery_envs
+
+  celery_worker:
+    env_file:
+      - .ha_postgres_redis_celery_envs

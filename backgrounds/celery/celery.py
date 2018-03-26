@@ -1,29 +1,29 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
+import os
+import sys
 from celery import Celery
 
-# TODO: from ENV
-# broker_url = 'redis://:password@host:port/db_number'
+
+broker_url = os.environ['TLM_BROKER_URL']
+
 
 app = Celery(
     'background',
-    broker='redis://',
-    backend='redis://',
-    include=['celery.tasks']
+    broker=broker_url,
+    backend=broker_url,
+    include=['backgrounds.celery.tasks']
 )
 
-'''
-task_routes = {
-    'get_weather': 'external_api',
-    'send_to': 'internal_api',
-}
-'''
 
 app.conf.update(
     task_send_sent_event=True,
     worker_hijack_root_logger=False
 )
 
+sys.path.append('.')
+sys.path.append('..')  # ^(
+sys.path.append('...')
+
 if __name__ == '__main__':
     app.start()
-

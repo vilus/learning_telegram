@@ -10,3 +10,6 @@ jsonschema
 mock
 beaker
 SQLAlchemy
+psycopg2
+redis
+pyowm
