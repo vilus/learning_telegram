@@ -9,6 +9,7 @@ from telegram import ReplyKeyboardRemove
 from telegram import InlineKeyboardButton
 from telegram import InlineKeyboardMarkup
 from math_handlers import eval_math_expr
+from weather_handlers import weather
 
 
 def start(bot, update):
@@ -55,6 +56,7 @@ def get_dispatcher(bot):
     dp.add_handler(CommandHandler('menu_on', menu_on))
     dp.add_handler(CommandHandler('menu_off', menu_off))
     dp.add_handler(CommandHandler('links', links))
+    dp.add_handler(CommandHandler('weather', weather))
     dp.add_handler(InlineQueryHandler(eval_math_expr))
     dp.add_handler(MessageHandler(Filters.text, echo))
     dp.add_handler(MessageHandler(Filters.command, unknown_cmd))

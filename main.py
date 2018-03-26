@@ -2,6 +2,7 @@
 import logging
 import os
 import telegram
+import sys
 from flask import Flask, request
 from handlers import get_dispatcher
 
@@ -28,3 +29,11 @@ def webhook_handler():
 @app.route('/')
 def index():
     return 'Hello World'
+
+
+sys.path.append('.')
+sys.path.append('..')  # ^(
+sys.path.append('...')
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=8080, debug=True, threaded=True)
